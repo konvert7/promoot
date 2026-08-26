@@ -1,6 +1,9 @@
 name: release
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 concurrency:
@@ -10,15 +13,21 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/@konvert7/promoot
     permissions:
       id-token: write
       contents: write
+      issues: write
+      pull-requests: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -44,26 +53,7 @@ jobs:
       - name: Build
         run: bun run build
 
-      - name: Resolve version
-        id: version
-        run: echo "version=$(bun --print 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
-
-      - name: Reject already-released version
-        run: |
-          if git rev-parse "v${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
-            echo "Tag v${{ steps.version.outputs.version }} already exists — bump the version in package.json first."
-            exit 1
-          fi
-
-      - name: Publish
-        run: npm publish --access public
-
-      - name: Tag release
-        run: |
-          git tag "v${{ steps.version.outputs.version }}"
-          git push origin "v${{ steps.version.outputs.version }}"
-
-      - name: GitHub release
-        run: gh release create "v${{ steps.version.outputs.version }}" --title "v${{ steps.version.outputs.version }}" --generate-notes
+      - name: Release
+        run: bunx semantic-release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
