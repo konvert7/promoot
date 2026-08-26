@@ -1,6 +1,6 @@
 {
   "name": "@konvert7/promoot",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Render a Promoot sponsor slot inline as a React server component, with views counted by the visitor's own browser.",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,7 +11,10 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "sideEffects": false,
   "publishConfig": {
     "access": "public"
@@ -22,7 +25,14 @@
   "peerDependencies": {
     "react": ">=19"
   },
-  "keywords": ["promoot", "sponsor", "slot", "react", "rsc", "server-component"],
+  "keywords": [
+    "promoot",
+    "sponsor",
+    "slot",
+    "react",
+    "rsc",
+    "server-component"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
