@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/konvert7/promoot/compare/v0.2.1...v0.3.0) (2026-08-27)
+
+
+### Features
+
+* render text ads alongside image ads ([3948a3e](https://github.com/konvert7/promoot/commit/3948a3e409faa0bb6746c04a9baff5204a27d896))
+
 ## [0.2.1](https://github.com/konvert7/promoot/compare/v0.2.0...v0.2.1) (2026-08-26)
 
 
