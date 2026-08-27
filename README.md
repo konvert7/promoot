@@ -16,6 +16,17 @@ import { PromootBlock } from "@konvert7/promoot";
 The `url` is the embed URL from your Promoot dashboard — the same string the iframe
 snippet uses, so one value serves either method.
 
+## What it renders
+
+Whatever the sponsor bought, without you choosing:
+
+- **An image ad** — their artwork, cropped to fill the slot.
+- **A text ad** — their favicon, a headline, a description and their domain, centred.
+  Headline and description are both optional; a link on its own renders the mark and
+  the bare domain. If no favicon could be captured, a monogram of the domain's first
+  letter is shown instead — never both, so a transparent icon can't show the letter
+  through it.
+
 ## Why inline
 
 An iframe fails closed. If a content filter ever blocks the frame, your sponsor's ad

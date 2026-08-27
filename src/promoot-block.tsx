@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import type { BlockPayload } from "./types.js";
+import type { BlockPayload, Creative } from "./types.js";
 
 export type PromootBlockProps = {
   /** The embed URL from your Promoot dashboard, the same one the iframe uses. */
@@ -37,7 +37,15 @@ export function scopedCss(payload: BlockPayload): string {
   return `${scope} { ${payload.paletteVars}; position: relative; display: block; width: 100%; max-width: ${payload.slot.widthPx}px; height: auto; max-height: ${payload.slot.heightPx}px; aspect-ratio: ${payload.slot.widthPx} / ${payload.slot.heightPx}; }
 ${scope} a { text-decoration: none; }
 ${scope} .promoot-ad { display: block; position: relative; height: 100%; width: 100%; }
-${scope} .promoot-ad img { display: block; height: 100%; width: 100%; object-fit: cover; }
+${scope} .promoot-ad > img { display: block; height: 100%; width: 100%; object-fit: cover; }
+${scope} .promoot-text { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 100%; height: 100%; box-sizing: border-box; padding: 6px 12px; border: 1px solid var(--edge); border-radius: 10px; background: var(--surface); overflow: hidden; text-align: center; font-family: system-ui, -apple-system, sans-serif; }
+${scope} .promoot-ad:hover .promoot-text { border-color: var(--edge-hover); background: var(--surface-hover); }
+${scope} .promoot-mark { position: relative; flex: none; display: grid; place-items: center; width: 24px; height: 24px; margin-bottom: 1px; border-radius: 6px; background: var(--edge); color: var(--surface); font-weight: 700; font-size: 12px; overflow: hidden; }
+${scope} .promoot-mark img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+${scope} .promoot-text > span:not(.promoot-mark) { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+${scope} .promoot-text .promoot-headline { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.25; }
+${scope} .promoot-text .promoot-desc { font-size: 12px; color: var(--muted); line-height: 1.25; }
+${scope} .promoot-text .promoot-host { font-size: 11px; color: var(--muted); line-height: 1.25; }
 ${scope} .promoot-cta { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; height: 100%; justify-content: center; padding: 0 10px; text-align: center; border: 1px dashed var(--edge); border-radius: 10px; box-sizing: border-box; color: var(--muted); background: var(--surface); font-family: system-ui, -apple-system, sans-serif; }
 ${scope} .promoot-cta:hover { border-color: var(--edge-hover); background: var(--surface-hover); }
 ${scope} .promoot-cta strong { font-size: 14px; color: var(--ink); }
@@ -60,6 +68,36 @@ const labelStyle: CSSProperties = {
   borderRadius: "4px",
   padding: "1px 5px",
 };
+
+// One or the other, never layered: a favicon with transparent corners would let
+// the monogram show through it, and a broken image painted over the letter
+// hides it anyway.
+function Mark({ creative }: { creative: Extract<Creative, { kind: "TEXT" }> }) {
+  return (
+    <span className="promoot-mark">
+      {creative.faviconUrl ? (
+        <img src={creative.faviconUrl} alt="" />
+      ) : (
+        creative.monogram
+      )}
+    </span>
+  );
+}
+
+function AdCreative({ creative }: { creative: Creative }) {
+  if (creative.kind === "IMAGE") {
+    return <img src={creative.imageUrl} alt={creative.title} />;
+  }
+
+  return (
+    <span className="promoot-text">
+      <Mark creative={creative} />
+      {creative.headline && <span className="promoot-headline">{creative.headline}</span>}
+      {creative.body && <span className="promoot-desc">{creative.body}</span>}
+      <span className="promoot-host">{creative.host}</span>
+    </span>
+  );
+}
 
 export async function PromootBlock({
   url,
@@ -84,7 +122,7 @@ export async function PromootBlock({
           target="_blank"
           rel="noopener nofollow sponsored"
         >
-          <img src={block.ad.imageUrl} alt={block.ad.title} />
+          <AdCreative creative={block.ad} />
           {block.slot.sponsoredLabel && (
             <span style={labelStyle}>{block.slot.sponsoredLabel}</span>
           )}

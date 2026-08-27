@@ -25,6 +25,7 @@ const runningAd: BlockPayload = {
   render: "ad",
   pitch: null,
   ad: {
+    kind: "IMAGE",
     title: "Try Acme",
     imageUrl: "https://cdn.promootlabs.com/creative.png",
     clickUrl: "https://promootlabs.com/c/ad_1",
@@ -47,6 +48,14 @@ function answerWith(body: BlockPayload | null, ok = true): string[] {
 
 async function render(props: Parameters<typeof PromootBlock>[0]): Promise<string> {
   return renderToStaticMarkup(await PromootBlock(props));
+}
+
+// The stylesheet names every class whether or not the markup uses it, so a
+// question about what was rendered has to be asked of the markup alone.
+async function markup(props: Parameters<typeof PromootBlock>[0]): Promise<string> {
+  const html = await render(props);
+
+  return html.slice(html.indexOf("</style>"));
 }
 
 afterEach(() => {
@@ -96,6 +105,75 @@ describe("what it renders", () => {
 
     expect(html).toContain('src="https://promootlabs.com/v/slot_1"');
     expect(html).toContain('class="promoot-beacon"');
+  });
+});
+
+const textAd: BlockPayload = {
+  ...payload,
+  render: "ad",
+  pitch: null,
+  ad: {
+    kind: "TEXT",
+    headline: "Claim your plot",
+    body: "A tiny land grab game",
+    faviconUrl: "https://cdn.promootlabs.com/ads/slot_1/favicon-1.png",
+    host: "landgrab.lol",
+    monogram: "L",
+    clickUrl: "https://promootlabs.com/c/ad_2",
+    expiresAt: null,
+  },
+};
+
+describe("a text ad", () => {
+  it("shows the headline, description and host", async () => {
+    answerWith(textAd);
+
+    const html = await render({ url: embedUrl });
+
+    expect(html).toContain("Claim your plot");
+    expect(html).toContain("A tiny land grab game");
+    expect(html).toContain("landgrab.lol");
+  });
+
+  it("shows the sponsor's own mark when one was captured", async () => {
+    answerWith(textAd);
+
+    const html = await render({ url: embedUrl });
+
+    expect(html).toContain('src="https://cdn.promootlabs.com/ads/slot_1/favicon-1.png"');
+    expect(html).not.toContain(">L<");
+  });
+
+  // Never both: a favicon with transparent corners would show the letter
+  // through it, and a broken image over the letter hides it anyway.
+  it("falls back to the monogram when there is no favicon", async () => {
+    answerWith({ ...textAd, ad: { ...textAd.ad, faviconUrl: null } as typeof textAd.ad });
+
+    const html = await render({ url: embedUrl });
+
+    expect(html).toContain(">L<");
+    expect(html).not.toContain("<img src=\"null\"");
+  });
+
+  it("renders a link-only ad as the bare host", async () => {
+    answerWith({
+      ...textAd,
+      ad: { ...textAd.ad, headline: null, body: null } as typeof textAd.ad,
+    });
+
+    const html = await markup({ url: embedUrl });
+
+    expect(html).toContain("landgrab.lol");
+    expect(html).not.toContain("promoot-headline");
+    expect(html).not.toContain("promoot-desc");
+  });
+
+  it("still routes the click through the counter", async () => {
+    answerWith(textAd);
+
+    expect(await render({ url: embedUrl })).toContain(
+      'href="https://promootlabs.com/c/ad_2"'
+    );
   });
 });
 
