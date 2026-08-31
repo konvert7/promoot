@@ -1,3 +1,10 @@
+## [0.6.1](https://github.com/konvert7/promoot/compare/v0.6.0...v0.6.1) (2026-08-31)
+
+
+### Bug Fixes
+
+* hold a minimum height so a narrow slot keeps its pitch readable ([f3e895d](https://github.com/konvert7/promoot/commit/f3e895de8d40e257220a6e3055e917f60a912e2c))
+
 # [0.6.0](https://github.com/konvert7/promoot/compare/v0.5.0...v0.6.0) (2026-08-31)
 
 
