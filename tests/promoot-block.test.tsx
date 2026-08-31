@@ -58,6 +58,41 @@ async function markup(props: Parameters<typeof PromootBlock>[0]): Promise<string
   return html.slice(html.indexOf("</style>"));
 }
 
+async function stylesheet(): Promise<string> {
+  const html = await render({ url: embedUrl });
+
+  return html.slice(html.indexOf("<style>") + 7, html.indexOf("</style>"));
+}
+
+// "A, B { … } C { … }" reads as three selectors, so a rule cannot smuggle an
+// unscoped one in after a comma.
+function selectorsIn(block: string): string[] {
+  return block
+    .split("}")
+    .map((chunk) => (chunk.split("{")[0] ?? "").trim())
+    .filter(Boolean)
+    .flatMap((selector) => selector.split(",").map((one) => one.trim()));
+}
+
+function selectorsOf(rule: string): string[] {
+  if (rule.startsWith("@keyframes")) {
+    return [];
+  }
+
+  return rule.startsWith("@media")
+    ? selectorsIn(rule.slice(rule.indexOf("{") + 1, rule.lastIndexOf("}")))
+    : selectorsIn(rule);
+}
+
+async function unscopedSelectors(): Promise<string[]> {
+  const css = await stylesheet();
+
+  return css
+    .split("\n")
+    .flatMap(selectorsOf)
+    .filter((selector) => !selector.startsWith('[data-promoot-slot="slot_1"]'));
+}
+
 afterEach(() => {
   globalThis.fetch = realFetch;
 });
@@ -192,13 +227,23 @@ describe("what it refuses to do to the host page", () => {
     expect(await render({ url: embedUrl })).not.toContain("color-scheme");
   });
 
-  it("scopes every rule to its own slot", async () => {
+  it("scopes every selector to its own slot, inside media queries too", async () => {
     answerWith(payload);
-    const html = await render({ url: embedUrl });
-    const css = html.slice(html.indexOf("<style>") + 7, html.indexOf("</style>"));
 
-    for (const rule of css.split("\n")) {
-      expect(rule.startsWith('[data-promoot-slot="slot_1"]')).toBe(true);
+    expect(await unscopedSelectors()).toEqual([]);
+  });
+
+  // A keyframe name is the one thing css cannot scope to a selector, so it has
+  // to carry the slot's id or two blocks on a page would fight over the name.
+  it("names its keyframes after the slot", async () => {
+    answerWith(payload);
+    const names = [...(await stylesheet()).matchAll(/@keyframes (\S+)/g)].map(
+      ([, name]) => name
+    );
+
+    expect(names.length).toBeGreaterThan(0);
+    for (const name of names) {
+      expect(name).toContain("slot_1");
     }
   });
 });
@@ -216,6 +261,117 @@ describe("the sponsored label", () => {
     answerWith({ ...runningAd, slot: { ...runningAd.slot, sponsoredLabel: null } });
 
     expect(await render({ url: embedUrl })).not.toContain("Sponsored");
+  });
+});
+
+// The owner composes up to three lines in their dashboard; the server resolves
+// them into words and this block only sets them.
+const billboard: BlockPayload = {
+  ...payload,
+  pitch: {
+    ...(payload.pitch as NonNullable<BlockPayload["pitch"]>),
+    price: "$50",
+    lines: [
+      { kind: "text", text: "Put your ad here" },
+      { kind: "price", text: "$50 a week" },
+      { kind: "proof", text: "Seen 1,240 times in the last 30 days" },
+    ],
+    spark: [0, 5, 9, 4, 12, 20, 8],
+  },
+};
+
+describe("a composed empty state", () => {
+  it("sets each line the owner stacked", async () => {
+    answerWith(billboard);
+
+    const html = await markup({ url: embedUrl });
+
+    expect(html).toContain('class="promoot-line promoot-line-text">Put your ad here<');
+    expect(html).toContain('class="promoot-line promoot-line-price">$50 a week<');
+    expect(html).toContain("promoot-line-proof");
+  });
+
+  it("leaves the classic pitch behind when it does", async () => {
+    answerWith(billboard);
+
+    const html = await markup({ url: embedUrl });
+
+    expect(html).toContain('class="promoot-bb"');
+    expect(html).not.toContain('class="promoot-cta"');
+    expect(html).not.toContain("Sponsor this spot for $50");
+  });
+
+  it("draws the sparkline behind the lines", async () => {
+    answerWith(billboard);
+
+    const html = await markup({ url: embedUrl });
+
+    expect(html).toContain('class="promoot-spark"');
+    expect(html).toContain("<polyline");
+    expect(html).toContain('points="0,48 ');
+  });
+
+  it("leaves the sparkline out when the slot has no traffic to show", async () => {
+    answerWith({
+      ...billboard,
+      pitch: { ...billboard.pitch, spark: null } as BlockPayload["pitch"],
+    });
+
+    const html = await markup({ url: embedUrl });
+
+    expect(html).not.toContain("promoot-spark");
+    expect(html).toContain("Put your ad here");
+  });
+
+  it("offers the visitor a preview of their own ad on hover", async () => {
+    answerWith(billboard);
+
+    const html = await markup({ url: embedUrl });
+
+    expect(html).toContain("Your product · one line your buyers read");
+    expect(html).toContain("This is how it would look. $50.");
+  });
+
+  it("drops the price from the preview when the server sends none", async () => {
+    answerWith({
+      ...billboard,
+      pitch: { ...billboard.pitch, price: undefined } as BlockPayload["pitch"],
+    });
+
+    const html = await markup({ url: embedUrl });
+
+    expect(html).toContain("This is how it would look.");
+    expect(html).not.toContain("This is how it would look. $");
+  });
+
+  it("still sells the slot through the purchase link", async () => {
+    answerWith(billboard);
+
+    expect(await markup({ url: embedUrl })).toContain(
+      'href="https://promootlabs.com/s/slot_1"'
+    );
+  });
+});
+
+// A host on an older Promoot deployment gets a payload with none of these
+// fields, and must keep rendering exactly what it rendered before.
+describe("a server that sends no composed lines", () => {
+  it("keeps the classic pitch", async () => {
+    answerWith(payload);
+
+    const html = await markup({ url: embedUrl });
+
+    expect(html).toContain('class="promoot-cta"');
+    expect(html).not.toContain('class="promoot-bb"');
+  });
+
+  it("keeps the classic pitch for an empty stack too", async () => {
+    answerWith({
+      ...billboard,
+      pitch: { ...billboard.pitch, lines: [] } as BlockPayload["pitch"],
+    });
+
+    expect(await markup({ url: embedUrl })).toContain('class="promoot-cta"');
   });
 });
 

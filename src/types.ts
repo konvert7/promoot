@@ -14,6 +14,15 @@ export type Creative =
       monogram: string;
     };
 
+/**
+ * One line of the empty state the slot's owner composed, already resolved into
+ * the words it prints. The kind only decides how it is set.
+ */
+export type PitchLine = {
+  kind: "text" | "price" | "proof" | "domain";
+  text: string;
+};
+
 /** What GET /api/block/:slotId answers with. */
 export type BlockPayload = {
   slot: {
@@ -30,6 +39,15 @@ export type BlockPayload = {
     proof: string | null;
     terms: string;
     purchaseUrl: string;
+    /**
+     * The owner's composed empty state. Present from Promoot 0.4 onwards; an
+     * older server omits it and the classic pitch is rendered instead.
+     */
+    lines?: PitchLine[] | null;
+    /** Daily views behind the lines, already gated by the owner's traffic floor. */
+    spark?: number[] | null;
+    /** The price on its own, formatted. */
+    price?: string;
   } | null;
   beaconUrl: string;
   paletteVars: string;

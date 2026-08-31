@@ -27,6 +27,15 @@ Whatever the sponsor bought, without you choosing:
   letter is shown instead — never both, so a transparent icon can't show the letter
   through it.
 
+And when nobody has bought it yet, the slot sells itself. If the owner composed an empty
+state in their dashboard, it renders as a billboard: the lines they chose — their own
+words, the price, the view count, their domain — over a faint chart of the last 30 days
+of traffic, with a preview of the visitor's own ad fading in on hover. Owners who never
+composed one get the plain pitch instead: headline, audience, proof and terms.
+
+The empty state needs no configuration here. It arrives resolved from the server, so the
+words are already the words, and this block only sets them.
+
 ## Why inline
 
 An iframe fails closed. If a content filter ever blocks the frame, your sponsor's ad
@@ -79,7 +88,9 @@ visitor's browser fetches regardless of how that HTML was produced.
 The block **never declares a colour scheme of its own**. Its palette uses `light-dark()`,
 which resolves against the scheme it inherits from your page — so a light-only site keeps
 a light panel even for a visitor whose OS prefers dark, and a dark site gets a dark one.
-All of its CSS is scoped to the block; nothing is defined on `:root`.
+All of its CSS is scoped to the block; nothing is defined on `:root`. The only name it
+declares globally is the keyframes the empty state breathes with on touch devices, and
+that name carries the slot's own id, so two blocks on one page never collide.
 
 The one thing you cannot restyle is the "Sponsored" label, which renders from inline
 styles. Disclosure of a paid placement is not the site owner's to remove.
