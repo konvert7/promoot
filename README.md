@@ -85,6 +85,13 @@ visitor's browser fetches regardless of how that HTML was produced.
 `className` and `style` land on the container, and the internal structure carries
 `data-promoot-*` attributes plus `promoot-*` class names you can target.
 
+**It inherits your page rather than painting over it.** Unless the owner picked a
+typeface in their dashboard, the block sets `font: inherit` and renders in whatever face
+your page already uses, webfont included — something the iframe version can never do,
+because nothing crosses an iframe boundary. Corner radius and outline width come from the
+owner's settings too, and each falls back to the shipped value if your Promoot server is
+older than those controls.
+
 The block **never declares a colour scheme of its own**. Its palette uses `light-dark()`,
 which resolves against the scheme it inherits from your page — so a light-only site keeps
 a light panel even for a visitor whose OS prefers dark, and a dark site gets a dark one.

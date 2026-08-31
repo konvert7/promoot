@@ -28,9 +28,6 @@ async function loadBlock(embedUrl: string): Promise<BlockPayload | null> {
   }
 }
 
-// Every rule is scoped to this one block, and it never declares a colour scheme
-// of its own: the palette uses light-dark(), which resolves against the scheme
-// inherited from the host page, so a light-only site keeps a light panel.
 // A keyframe name cannot be scoped to a selector, so it carries the slot's own
 // id instead, stripped to the characters a css identifier may hold.
 function breatheName(slotId: string, face: string): string {
@@ -45,7 +42,7 @@ function billboardCss(payload: BlockPayload, scope: string): string {
   const rest = breatheName(payload.slot.id, "rest");
   const ghost = breatheName(payload.slot.id, "ghost");
 
-  return `${scope} .promoot-bb { position: relative; display: block; width: 100%; height: 100%; box-sizing: border-box; border: 1px solid var(--edge); border-radius: 10px; background: var(--surface); overflow: hidden; font-family: system-ui, -apple-system, sans-serif; }
+  return `${scope} .promoot-bb { position: relative; display: block; width: 100%; height: 100%; box-sizing: border-box; border: var(--border, 1px) solid var(--edge); border-radius: var(--radius, 10px); background: var(--surface); overflow: hidden; font-family: var(--font, inherit); }
 ${scope} .promoot-bb:hover { border-color: var(--edge-hover); }
 ${scope} .promoot-face { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px 16px; box-sizing: border-box; text-align: center; transition: opacity .3s ease; }
 ${scope} .promoot-bb:hover .promoot-rest { opacity: 0; }
@@ -67,6 +64,9 @@ ${scope} .promoot-ghost-body { display: block; font-size: 12px; color: var(--mut
 @keyframes ${ghost} { 0%, 55%, 100% { opacity: 0; } 70%, 85% { opacity: 1; } }`;
 }
 
+// Every rule is scoped to this one block, and it never declares a colour scheme
+// of its own: the palette uses light-dark(), which resolves against the scheme
+// inherited from the host page, so a light-only site keeps a light panel.
 export function scopedCss(payload: BlockPayload): string {
   const scope = `[data-promoot-slot="${payload.slot.id}"]`;
 
@@ -74,7 +74,7 @@ export function scopedCss(payload: BlockPayload): string {
 ${scope} a { text-decoration: none; }
 ${scope} .promoot-ad { display: block; position: relative; height: 100%; width: 100%; }
 ${scope} .promoot-ad > img { display: block; height: 100%; width: 100%; object-fit: cover; }
-${scope} .promoot-text { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 100%; height: 100%; box-sizing: border-box; padding: 6px 12px; border: 1px solid var(--edge); border-radius: 10px; background: var(--surface); overflow: hidden; text-align: center; font-family: system-ui, -apple-system, sans-serif; }
+${scope} .promoot-text { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 100%; height: 100%; box-sizing: border-box; padding: 6px 12px; border: var(--border, 1px) solid var(--edge); border-radius: var(--radius, 10px); background: var(--surface); overflow: hidden; text-align: center; font-family: var(--font, inherit); }
 ${scope} .promoot-ad:hover .promoot-text { border-color: var(--edge-hover); background: var(--surface-hover); }
 ${scope} .promoot-mark { position: relative; flex: none; display: grid; place-items: center; width: 24px; height: 24px; margin-bottom: 1px; border-radius: 6px; background: var(--edge); color: var(--surface); font-weight: 700; font-size: 12px; overflow: hidden; }
 ${scope} .promoot-mark img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
@@ -82,7 +82,7 @@ ${scope} .promoot-text > span:not(.promoot-mark) { max-width: 100%; white-space:
 ${scope} .promoot-text .promoot-headline { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.25; }
 ${scope} .promoot-text .promoot-desc { font-size: 12px; color: var(--muted); line-height: 1.25; }
 ${scope} .promoot-text .promoot-host { font-size: 11px; color: var(--muted); line-height: 1.25; }
-${scope} .promoot-cta { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; height: 100%; justify-content: center; padding: 0 10px; text-align: center; border: 1px dashed var(--edge); border-radius: 10px; box-sizing: border-box; color: var(--muted); background: var(--surface); font-family: system-ui, -apple-system, sans-serif; }
+${scope} .promoot-cta { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; height: 100%; justify-content: center; padding: 0 10px; text-align: center; border: var(--border, 1px) dashed var(--edge); border-radius: var(--radius, 10px); box-sizing: border-box; color: var(--muted); background: var(--surface); font-family: var(--font, inherit); }
 ${scope} .promoot-cta:hover { border-color: var(--edge-hover); background: var(--surface-hover); }
 ${scope} .promoot-cta strong { font-size: 14px; color: var(--ink); }
 ${scope} .promoot-cta .promoot-pitch { font-size: 13px; color: var(--ink); }

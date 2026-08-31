@@ -375,6 +375,56 @@ describe("a server that sends no composed lines", () => {
   });
 });
 
+// The owner's Match-your-site controls arrive as custom properties on the
+// block's own scope; every frame has to actually read them.
+describe("the look the owner chose", () => {
+  const dressed = {
+    ...payload,
+    paletteVars:
+      "--surface: #fff; --edge: #ccc; --ink: #000; --muted: #666; --font: Georgia, serif; --radius: 3px; --border: 0px",
+  };
+
+  it("declares what the server sent on its own scope", async () => {
+    answerWith(dressed);
+    const css = await stylesheet();
+
+    expect(css).toContain("--font: Georgia, serif");
+    expect(css).toContain("--radius: 3px");
+    expect(css).toContain("--border: 0px");
+  });
+
+  it("draws every frame from those values rather than its own", async () => {
+    answerWith(dressed);
+    const css = await stylesheet();
+
+    for (const frame of [".promoot-text {", ".promoot-cta {", ".promoot-bb {"]) {
+      const rule = css.slice(css.indexOf(frame), css.indexOf("}", css.indexOf(frame)));
+
+      expect(rule).toContain("var(--border, 1px)");
+      expect(rule).toContain("var(--radius, 10px)");
+      expect(rule).toContain("var(--font, inherit)");
+    }
+  });
+
+  // A block on an older Promoot server is sent no --border at all. Without a
+  // literal fallback the whole shorthand is invalid at computed-value time and
+  // the frame silently loses its outline.
+  it("keeps a literal fallback on every look value", async () => {
+    answerWith(payload);
+    const css = await stylesheet();
+
+    expect(css).not.toContain("var(--border)");
+    expect(css).not.toContain("var(--radius)");
+    expect(css).not.toContain("var(--font)");
+  });
+
+  it("takes the host's own typeface when the owner never picked one", async () => {
+    answerWith(payload);
+
+    expect(await stylesheet()).toContain("var(--font, inherit)");
+  });
+});
+
 describe("when there is nothing to show", () => {
   it("renders the fallback for a paused slot", async () => {
     answerWith({ ...payload, render: "blank", pitch: null });
