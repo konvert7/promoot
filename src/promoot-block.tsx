@@ -34,6 +34,8 @@ function keyframeName(slotId: string, motion: string): string {
   return `promoot-${motion}-${slotId.replaceAll(/[^A-Za-z0-9_-]/g, "")}`;
 }
 
+const pitchMinHeightPx = 88;
+
 const mono = "ui-monospace, SFMono-Regular, Menlo, monospace";
 
 // The face the owner composed, and the ghost that shows a visitor what their own
@@ -70,8 +72,9 @@ ${scope} .promoot-ghost-body { display: block; font-size: 12px; color: var(--mut
 export function scopedCss(payload: BlockPayload): string {
   const scope = `[data-promoot-slot="${payload.slot.id}"]`;
   const arrive = keyframeName(payload.slot.id, "arrive");
+  const floor = Math.min(pitchMinHeightPx, payload.slot.heightPx);
 
-  return `${scope} { ${payload.paletteVars}; position: relative; display: block; width: 100%; max-width: ${payload.slot.widthPx}px; height: auto; max-height: ${payload.slot.heightPx}px; aspect-ratio: ${payload.slot.widthPx} / ${payload.slot.heightPx}; animation: ${arrive} .5s cubic-bezier(.45,0,.25,1) both; }
+  return `${scope} { ${payload.paletteVars}; position: relative; display: block; width: 100%; max-width: ${payload.slot.widthPx}px; height: auto; max-height: ${payload.slot.heightPx}px; min-height: ${floor}px; aspect-ratio: ${payload.slot.widthPx} / ${payload.slot.heightPx}; animation: ${arrive} .5s cubic-bezier(.45,0,.25,1) both; }
 @keyframes ${arrive} { from { opacity: 0; transform: scale(.985); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { ${scope} { animation: none; } }
 ${scope} a { text-decoration: none; }

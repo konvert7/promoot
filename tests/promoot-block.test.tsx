@@ -111,6 +111,25 @@ describe("the endpoint it calls", () => {
   });
 });
 
+describe("the space it holds", () => {
+  // A slot's aspect ratio alone crushes the pitch on a narrow phone: a 400x100
+  // block is 25px tall inside a 100px column, and its text does not shrink.
+  it("never lets the block get shorter than the pitch needs", async () => {
+    answerWith(payload);
+    const html = await render({ url: embedUrl });
+
+    expect(html).toContain("min-height: 88px");
+  });
+
+  it("floors a short slot at its own height, never taller", async () => {
+    answerWith({ ...payload, slot: { ...payload.slot, heightPx: 60 } });
+    const html = await render({ url: embedUrl });
+
+    expect(html).toContain("min-height: 60px");
+    expect(html).not.toContain("min-height: 88px");
+  });
+});
+
 describe("what it renders", () => {
   it("shows the pitch for an empty slot", async () => {
     answerWith(payload);
