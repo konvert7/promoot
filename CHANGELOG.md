@@ -1,3 +1,10 @@
+# [0.5.0](https://github.com/konvert7/promoot/compare/v0.4.0...v0.5.0) (2026-08-31)
+
+
+### Features
+
+* add option to inherit host page design ([e9143e2](https://github.com/konvert7/promoot/commit/e9143e2192d1efa9da0597998e6fe46794aed8b7))
+
 # [0.4.0](https://github.com/konvert7/promoot/compare/v0.3.0...v0.4.0) (2026-08-31)
 
 
