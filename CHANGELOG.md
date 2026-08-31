@@ -1,3 +1,10 @@
+## [0.6.2](https://github.com/konvert7/promoot/compare/v0.6.1...v0.6.2) (2026-08-31)
+
+
+### Bug Fixes
+
+* let the host page's mono face reach the price and proof lines ([789dd5b](https://github.com/konvert7/promoot/commit/789dd5b62ec1553624ab8f643169e21845ba9ccc))
+
 ## [0.6.1](https://github.com/konvert7/promoot/compare/v0.6.0...v0.6.1) (2026-08-31)
 
 
