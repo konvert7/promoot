@@ -1,3 +1,10 @@
+# [0.4.0](https://github.com/konvert7/promoot/compare/v0.3.0...v0.4.0) (2026-08-31)
+
+
+### Features
+
+* add empty state pitch line support for sponsor slots ([bc92749](https://github.com/konvert7/promoot/commit/bc927498d1b55d0d32ab42f20131746029e19b99))
+
 # [0.3.0](https://github.com/konvert7/promoot/compare/v0.2.1...v0.3.0) (2026-08-27)
 
 
