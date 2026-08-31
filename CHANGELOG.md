@@ -1,3 +1,10 @@
+# [0.6.0](https://github.com/konvert7/promoot/compare/v0.5.0...v0.6.0) (2026-08-31)
+
+
+### Features
+
+* animate in on reveal ([7a8ae84](https://github.com/konvert7/promoot/commit/7a8ae847ef42b7feb2f122a93d559be4079120b8))
+
 # [0.5.0](https://github.com/konvert7/promoot/compare/v0.4.0...v0.5.0) (2026-08-31)
 
 
