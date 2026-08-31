@@ -30,8 +30,8 @@ async function loadBlock(embedUrl: string): Promise<BlockPayload | null> {
 
 // A keyframe name cannot be scoped to a selector, so it carries the slot's own
 // id instead, stripped to the characters a css identifier may hold.
-function breatheName(slotId: string, face: string): string {
-  return `promoot-breathe-${face}-${slotId.replaceAll(/[^A-Za-z0-9_-]/g, "")}`;
+function keyframeName(slotId: string, motion: string): string {
+  return `promoot-${motion}-${slotId.replaceAll(/[^A-Za-z0-9_-]/g, "")}`;
 }
 
 const mono = "ui-monospace, SFMono-Regular, Menlo, monospace";
@@ -39,8 +39,8 @@ const mono = "ui-monospace, SFMono-Regular, Menlo, monospace";
 // The face the owner composed, and the ghost that shows a visitor what their own
 // ad would look like in its place. Both are stacked, and hover swaps them.
 function billboardCss(payload: BlockPayload, scope: string): string {
-  const rest = breatheName(payload.slot.id, "rest");
-  const ghost = breatheName(payload.slot.id, "ghost");
+  const rest = keyframeName(payload.slot.id, "breathe-rest");
+  const ghost = keyframeName(payload.slot.id, "breathe-ghost");
 
   return `${scope} .promoot-bb { position: relative; display: block; width: 100%; height: 100%; box-sizing: border-box; border: var(--border, 1px) solid var(--edge); border-radius: var(--radius, 10px); background: var(--surface); overflow: hidden; font-family: var(--font, inherit); }
 ${scope} .promoot-bb:hover { border-color: var(--edge-hover); }
@@ -69,8 +69,11 @@ ${scope} .promoot-ghost-body { display: block; font-size: 12px; color: var(--mut
 // inherited from the host page, so a light-only site keeps a light panel.
 export function scopedCss(payload: BlockPayload): string {
   const scope = `[data-promoot-slot="${payload.slot.id}"]`;
+  const arrive = keyframeName(payload.slot.id, "arrive");
 
-  return `${scope} { ${payload.paletteVars}; position: relative; display: block; width: 100%; max-width: ${payload.slot.widthPx}px; height: auto; max-height: ${payload.slot.heightPx}px; aspect-ratio: ${payload.slot.widthPx} / ${payload.slot.heightPx}; }
+  return `${scope} { ${payload.paletteVars}; position: relative; display: block; width: 100%; max-width: ${payload.slot.widthPx}px; height: auto; max-height: ${payload.slot.heightPx}px; aspect-ratio: ${payload.slot.widthPx} / ${payload.slot.heightPx}; animation: ${arrive} .5s cubic-bezier(.45,0,.25,1) both; }
+@keyframes ${arrive} { from { opacity: 0; transform: scale(.985); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { ${scope} { animation: none; } }
 ${scope} a { text-decoration: none; }
 ${scope} .promoot-ad { display: block; position: relative; height: 100%; width: 100%; }
 ${scope} .promoot-ad > img { display: block; height: 100%; width: 100%; object-fit: cover; }
