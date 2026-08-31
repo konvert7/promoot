@@ -36,7 +36,7 @@ function keyframeName(slotId: string, motion: string): string {
 
 const pitchMinHeightPx = 88;
 
-const mono = "ui-monospace, SFMono-Regular, Menlo, monospace";
+const mono = "var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)";
 
 // The face the owner composed, and the ghost that shows a visitor what their own
 // ad would look like in its place. Both are stacked, and hover swaps them.

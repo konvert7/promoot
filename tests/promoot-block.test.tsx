@@ -111,6 +111,24 @@ describe("the endpoint it calls", () => {
   });
 });
 
+describe("the type it borrows", () => {
+  // The sans side already falls through to the page via inherit; the mono side
+  // was a literal, so a host that sets its own mono face could not reach it.
+  it("lets the page's mono face win where one is set", async () => {
+    answerWith(payload);
+    const html = await render({ url: embedUrl });
+
+    expect(html).toContain("var(--font-mono, ui-monospace");
+  });
+
+  it("keeps a system mono stack as the fallback", async () => {
+    answerWith(payload);
+    const html = await render({ url: embedUrl });
+
+    expect(html).toContain("SFMono-Regular, Menlo, monospace)");
+  });
+});
+
 describe("the space it holds", () => {
   // A slot's aspect ratio alone crushes the pitch on a narrow phone: a 400x100
   // block is 25px tall inside a 100px column, and its text does not shrink.
