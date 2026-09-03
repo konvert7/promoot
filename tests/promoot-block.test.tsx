@@ -392,6 +392,71 @@ describe("a composed empty state", () => {
 
 // A host on an older Promoot deployment gets a payload with none of these
 // fields, and must keep rendering exactly what it rendered before.
+// An icon line arrives as shapes rather than words, and until 0.7 the block
+// printed an empty span for it.
+describe("an icon line", () => {
+  const star: BlockPayload = {
+    ...billboard,
+    pitch: {
+      ...(billboard.pitch as NonNullable<BlockPayload["pitch"]>),
+      lines: [
+        {
+          kind: "icon",
+          icon: "STAR",
+          shapes: [
+            ["path", { d: "M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5.5 20l2-7L2 9h7z" }],
+            ["circle", { cx: 12, cy: 12, r: 3 }],
+          ],
+        },
+        { kind: "text", text: "Put your ad here" },
+      ],
+    },
+  };
+
+  it("draws the shapes the server sent", async () => {
+    answerWith(star);
+
+    const html = await markup({ url: embedUrl });
+
+    expect(html).toContain('class="promoot-line promoot-line-icon"><svg');
+    expect(html).toContain('<path d="M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5.5 20l2-7L2 9h7z">');
+    expect(html).toContain('<circle cx="12" cy="12" r="3">');
+    expect(html).toContain('stroke="currentColor"');
+  });
+
+  it("colours the drawing with the owner's ink", async () => {
+    answerWith(star);
+
+    const css = await stylesheet();
+
+    expect(css).toContain(".promoot-line-icon { display: grid; place-items: center; color: var(--ink)");
+  });
+
+  it("draws only shapes it knows, never markup the payload names", async () => {
+    answerWith({
+      ...star,
+      pitch: {
+        ...(star.pitch as NonNullable<BlockPayload["pitch"]>),
+        lines: [
+          {
+            kind: "icon",
+            icon: "STAR",
+            shapes: [
+              ["script", { src: "https://evil.example/x.js" }],
+              ["path", { d: "M0 0h24" }],
+            ],
+          },
+        ],
+      },
+    });
+
+    const html = await markup({ url: embedUrl });
+
+    expect(html).not.toContain("<script");
+    expect(html).toContain('<path d="M0 0h24">');
+  });
+});
+
 describe("a server that sends no composed lines", () => {
   it("keeps the classic pitch", async () => {
     answerWith(payload);

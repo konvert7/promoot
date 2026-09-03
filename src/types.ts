@@ -14,14 +14,17 @@ export type Creative =
       monogram: string;
     };
 
+/** One SVG element of an icon: its tag and the attributes it is drawn with. */
+export type IconShape = [tag: string, attrs: Record<string, string | number>];
+
 /**
  * One line of the empty state the slot's owner composed, already resolved into
- * the words it prints. The kind only decides how it is set.
+ * the words it prints. The kind only decides how it is set. An icon line
+ * carries a drawing where the others carry words.
  */
-export type PitchLine = {
-  kind: "text" | "price" | "proof" | "domain";
-  text: string;
-};
+export type PitchLine =
+  | { kind: "text" | "price" | "proof" | "domain"; text: string }
+  | { kind: "icon"; icon: string; shapes: IconShape[] };
 
 /** What GET /api/block/:slotId answers with. */
 export type BlockPayload = {

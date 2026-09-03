@@ -1,5 +1,5 @@
-import type { CSSProperties, ReactNode } from "react";
-import type { BlockPayload, Creative, PitchLine } from "./types.js";
+import { type CSSProperties, createElement, type ReactNode } from "react";
+import type { BlockPayload, Creative, IconShape, PitchLine } from "./types.js";
 
 export type PromootBlockProps = {
   /** The embed URL from your Promoot dashboard, the same one the iframe uses. */
@@ -57,6 +57,7 @@ ${scope} .promoot-line { position: relative; max-width: 100%; white-space: nowra
 ${scope} .promoot-line-text { font-size: 15px; font-weight: 600; color: var(--ink); }
 ${scope} .promoot-line-price { font-family: ${mono}; font-size: 12.5px; font-weight: 600; color: var(--ink); }
 ${scope} .promoot-line-proof, ${scope} .promoot-line-domain { font-family: ${mono}; font-size: 11px; color: var(--muted); }
+${scope} .promoot-line-icon { display: grid; place-items: center; color: var(--ink); overflow: visible; }
 ${scope} .promoot-plus { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 9px; border: 1.5px dashed var(--muted); color: var(--muted); font-size: 18px; }
 ${scope} .promoot-ghost-title { display: block; font-size: 13.5px; font-weight: 600; color: var(--ink); }
 ${scope} .promoot-ghost-body { display: block; font-size: 12px; color: var(--muted); }
@@ -176,6 +177,40 @@ function Spark({ series }: { series: number[] }) {
 
 type Pitch = NonNullable<BlockPayload["pitch"]>;
 
+const iconPx = 26;
+
+// The server names the drawing, but only a shape the block knows how to draw
+// is created from it, so a payload can never place markup of its own here.
+const drawableShapes = new Set(["path", "circle", "rect", "line", "polyline", "polygon", "ellipse"]);
+
+function Icon({ shapes }: { shapes: IconShape[] }) {
+  return (
+    <svg
+      width={iconPx}
+      height={iconPx}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {shapes
+        .filter(([tag]) => drawableShapes.has(tag))
+        .map(([tag, attrs], index) => createElement(tag, { key: index, ...attrs }))}
+    </svg>
+  );
+}
+
+function Line({ line }: { line: PitchLine }) {
+  return (
+    <span className={`promoot-line promoot-line-${line.kind}`}>
+      {line.kind === "icon" ? <Icon shapes={line.shapes} /> : line.text}
+    </span>
+  );
+}
+
 // What the owner wrote, with a preview of somebody else's ad underneath it: the
 // empty slot sells itself to the visitor who could fill it.
 function Billboard({ pitch, lines }: { pitch: Pitch; lines: PitchLine[] }) {
@@ -184,12 +219,7 @@ function Billboard({ pitch, lines }: { pitch: Pitch; lines: PitchLine[] }) {
       <span className="promoot-face promoot-rest">
         {pitch.spark?.length ? <Spark series={pitch.spark} /> : null}
         {lines.map((line, index) => (
-          <span
-            key={`${line.kind}-${index}`}
-            className={`promoot-line promoot-line-${line.kind}`}
-          >
-            {line.text}
-          </span>
+          <Line key={`${line.kind}-${index}`} line={line} />
         ))}
       </span>
 
