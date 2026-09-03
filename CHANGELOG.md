@@ -1,3 +1,10 @@
+# [0.7.0](https://github.com/konvert7/promoot/compare/v0.6.2...v0.7.0) (2026-09-03)
+
+
+### Features
+
+* draw the icon line an owner stacks above their words ([e0c8020](https://github.com/konvert7/promoot/commit/e0c80209832362664cb21e91c3d17b0c38332cb7))
+
 ## [0.6.2](https://github.com/konvert7/promoot/compare/v0.6.1...v0.6.2) (2026-08-31)
 
 
